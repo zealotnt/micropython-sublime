@@ -1,0 +1,21 @@
+[{
+    "id": "tools",
+    "children": [{
+        "caption": "Sub-uPy",
+        "children": [{
+                "caption": "Select port",
+                "command": "serial_select"
+            }, 
+            {
+                "caption": "Write",
+                "command": "serial_write"
+            },
+            {
+                "caption": "Read",
+                "command": "serial_read"
+            }
+
+        ]
+
+    }]
+}]
