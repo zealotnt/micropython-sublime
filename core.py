@@ -19,8 +19,7 @@ class SubUpySerial():
 	"""
 	# worst-case byte-to-byte time is 100ms
 	CHAR_TIMEOUT = 0.1
-	FLUSH_INPUT = 10
-	RECEIVE_TIMEOUT = 100
+	RECEIVE_TIMEOUT = 10
 	CODE_CTRL_C = '\x03'
 
 	def __init__(self, port, baud):
@@ -28,17 +27,6 @@ class SubUpySerial():
 		:Parameter port: serial port to use (/dev/tty* or COM*)
 		"""
 		self._port = serial.Serial(port=port, baudrate=baud, timeout=self.CHAR_TIMEOUT)
-
-	def WaitTillFinishRcv(self):
-		time_start = float(time.time() * 1000)
-		while True:
-			time_check = float(time.time() * 1000)
-			waiting = self._port.inWaiting()
-			read_bytes = self._port.read(1 if waiting == 0 else waiting)
-			print read_bytes
-			if read_bytes == '' and (time_check - time_start) > self.FLUSH_INPUT:
-				self._port.flushInput()
-				return
 
 	def SendCmd(self, cmd):
 		# Append new line at the end of command
@@ -66,7 +54,9 @@ class SubUpySerial():
 			waiting = self._port.inWaiting()
 			read_bytes = self._port.read(1 if waiting == 0 else waiting)
 
-			response += read_bytes
+			if len(read_bytes) != 0:
+				time_start = float(time.time() * 1000)
+				response += read_bytes
 
 			if read_bytes == '' and (time_check - time_start) > self.RECEIVE_TIMEOUT:
 				return response
@@ -100,6 +90,10 @@ class SubUpyUtility():
 
 	@staticmethod
 	def ReadFile(subupy_serial, file_name):
+		list_files = SubUpyUtility.ListFile(subupy_serial)
+		if not (file_name in list_files):
+			return None
+
 		subupy_serial.SendCmd("f=open('" + file_name + "', 'r')")
 		response_str = subupy_serial.SendCmd("f.read()")
 		subupy_serial.SendCmd("f.close()")
@@ -116,9 +110,17 @@ class SubUpyUtility():
 
 	@staticmethod
 	def WriteFile(subupy_serial, file_name, file_data):
-		print "f=open('" + file_name + "', 'w')"
 		subupy_serial.SendCmd("f=open('" + file_name + "', 'w')")
 		response_str = subupy_serial.SendCmd("f.write('" + file_data + "')")
-		print "f.write('" + file_data + "')"
 		subupy_serial.SendCmd("f.close()")
 		return response_str
+
+	@staticmethod
+	def RemoveFile(subupy_serial, file_name):
+		list_files = SubUpyUtility.ListFile(subupy_serial)
+		if not (file_name in list_files):
+			return False
+
+		subupy_serial.SendCmd("import os")
+		subupy_serial.SendCmd("os.remove('" + file_name + "')")
+		return True

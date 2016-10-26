@@ -80,11 +80,13 @@ if __name__ == "__main__":
 	# print "The board response: " + response
 	# dump_hex(response, "The board response: ")
 
-	# resp = SubUpyUtility.ListFile(commander)
-	# print resp
-	# print type(resp)
-
-	string_to_write = r"Specify \'wb\' as the second argument to open() to open for writing in binary mode"
-	resp = SubUpyUtility.WriteFile(commander, 'main.py', string_to_write)
-	resp = SubUpyUtility.ReadFile(commander, 'main.py')
+	resp = SubUpyUtility.ListFile(commander)
 	print resp
+	print type(resp)
+
+	# string_to_write = r"Specify \'wb\' as the second argument to open() to open for writing in binary mode"
+	# resp = SubUpyUtility.WriteFile(commander, 'main.py', string_to_write)
+	resp = SubUpyUtility.ReadFile(commander, 'boot.py')
+	print "written", resp
+
+	# print SubUpyUtility.RemoveFile(commander, "main.py")
