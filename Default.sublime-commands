@@ -1,4 +1,18 @@
 [
-    {"caption": "sub-upy: ListPorts", "command": "sub_upy",
-        "args": {"sub_upy_command": "connect"}},
+    {
+        "caption": "sub-upy: Connect port",
+        "command": "sub_upy_connect_port",
+    },
+    {
+        "caption": "sub-upy: Save current file",
+        "command": "sub_upy_save_current_file",
+    },
+    {
+        "caption": "sub-upy: Delete file",
+        "command": "sub_upy_delete_file",
+    },
+    {
+        "caption": "sub-upy: Open file",
+        "command": "sub_upy_open_file",
+    },
 ]
