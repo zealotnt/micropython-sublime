@@ -1,18 +1,18 @@
 [
     {
-        "caption": "sub-upy: Connect port",
+        "caption": "subupy: Connect port",
         "command": "sub_upy_connect_port",
     },
     {
-        "caption": "sub-upy: Save current file",
+        "caption": "subupy: Save current file",
         "command": "sub_upy_save_current_file",
     },
     {
-        "caption": "sub-upy: Delete file",
+        "caption": "subupy: Delete file",
         "command": "sub_upy_delete_file",
     },
     {
-        "caption": "sub-upy: Open file",
+        "caption": "subupy: Open file",
         "command": "sub_upy_open_file",
     },
 ]
