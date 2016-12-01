@@ -3,6 +3,11 @@ import sublime
 import sublime_plugin
 import subprocess
 import threading
+import sys
+import os
+
+sys.path.append(os.path.dirname(__file__))
+from subupy_serial import *
 
 settings = sublime.load_settings('subupy.sublime-settings')
 

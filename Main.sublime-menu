@@ -7,15 +7,7 @@
                 "children": [
                     {
                         "caption": "Select port",
-                        "command": "serial_select"
-                    },
-                    {
-                        "caption": "Write",
-                        "command": "serial_write"
-                    },
-                    {
-                        "caption": "Read",
-                        "command": "serial_read"
+                        "command": "sub_upy_connect_port"
                     }
                 ]
             }
