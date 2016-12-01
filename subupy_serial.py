@@ -34,11 +34,11 @@ class SubUpySerial():
         cmd += "\r\n"
 
         # Send ctrl+c to abort current command line
-        self._port.write(self.CODE_CTRL_C)
+        self._port.write(self.CODE_CTRL_C.encode('cp437'))
 
         # Write the command
         self._port.flushInput()
-        self._port.write(cmd)
+        self._port.write(cmd.encode())
 
         # Receive the whole buffer from target
         rcv_buff = self.receiveRsp()
@@ -57,9 +57,9 @@ class SubUpySerial():
 
             if len(read_bytes) != 0:
                 time_start = float(time.time() * 1000)
-                response += read_bytes
+                response += read_bytes.decode('cp437')
 
-            if read_bytes == '' and (time_check - time_start) > self.RECEIVE_TIMEOUT:
+            if read_bytes == b'' and (time_check - time_start) > self.RECEIVE_TIMEOUT:
                 return response
 
     def parseOutput(self, rcv_buff, cmd):

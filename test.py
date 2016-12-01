@@ -15,7 +15,7 @@ import struct
 from optparse import OptionParser, OptionGroup
 
 sys.path.insert(0, 'subupy')
-from core import SubUpySerial, SubUpyUtility
+from subupy_serial import SubUpySerial, SubUpyUtility
 
 # ---- CONSTANTS
 
@@ -45,10 +45,6 @@ if __name__ == "__main__":
 						dest="serial",
 						type="string",
 						help="define the serial port to use")
-	parser.add_option(  "-v", "--verbose",
-						action="count",
-						dest="verbose",
-						help="enable verbose mode")
 	parser.add_option(  "-l", "--list-serial",
 						action="store_true",
 						dest="list_serial",
@@ -58,35 +54,32 @@ if __name__ == "__main__":
 	(options, args) = parser.parse_args()
 
 	if options.list_serial:
-		print "Available serial ports:"
+		print("Available serial ports:")
 		for port_name in scan():
-			print '  - ' + port_name
+			print('  - ' + port_name)
 		sys.exit(0)
 
 	if options.serial is not None:
 		serial = options.serial
 	else:
 		serial = DEFAULT_SERIAL_PORT
-		print "No serial port specified, use " + DEFAULT_SERIAL_PORT + " as default"
+		print("No serial port specified, use " + DEFAULT_SERIAL_PORT + " as default")
 
 	port_name = serial
-
-	if options.verbose >= VERBOSE:
-		print 'Open serial port: ' + port_name
 
 	commander = SubUpySerial(port_name, 115200)
 
 	# response = commander.SendCmd(r"print('1\n\n\n123\r\n123132')")
-	# print "The board response: " + response
+	# print("The board response: " + response)
 	# dump_hex(response, "The board response: ")
 
 	resp = SubUpyUtility.ListFile(commander)
-	print resp
-	print type(resp)
+	print(resp)
+	print(type(resp))
 
 	# string_to_write = r"Specify \'wb\' as the second argument to open() to open for writing in binary mode"
 	# resp = SubUpyUtility.WriteFile(commander, 'main.py', string_to_write)
 	resp = SubUpyUtility.ReadFile(commander, 'boot.py')
-	print "written", resp
+	print("written", resp)
 
-	# print SubUpyUtility.RemoveFile(commander, "main.py")
+	# print(SubUpyUtility.RemoveFile(commander, "main.py"))
