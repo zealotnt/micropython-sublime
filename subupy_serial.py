@@ -3,13 +3,16 @@
 #
 
 #---- IMPORTS
-import serial
 import struct
 import binascii
 import time
 import re
 import ast
 import os, sys, glob
+
+sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.join(os.path.dirname(__file__), "serial"))
+import serial
 
 #---- CONSTANT
 
@@ -30,15 +33,15 @@ class SubUpySerial():
         self._port = serial.Serial(port=port, baudrate=baud, timeout=self.CHAR_TIMEOUT)
 
     def SendCmd(self, cmd):
-        # Append new line at the end of command
-        cmd += "\r\n"
-
         # Send ctrl+c to abort current command line
         self._port.write(self.CODE_CTRL_C.encode('cp437'))
 
         # Write the command
-        self._port.flushInput()
-        self._port.write(cmd.encode())
+        self._port.flushOutput()
+        self.receiveRsp()
+
+        # Append new line at the end of command
+        self._port.write((cmd + "\n").encode('cp437'))
 
         # Receive the whole buffer from target
         rcv_buff = self.receiveRsp()
@@ -66,13 +69,13 @@ class SubUpySerial():
         response = ""
 
         # Find the line that contains the command
-        match = re.findall(r'>>> ((.*\n)+)>>>', rcv_buff)
+        match = re.findall(r'((.*\n)+)>>>', rcv_buff)
 
         if len(match) == 0:
             return response
 
         # If the command is not echoed, something error
-        if match[0][0].find(cmd, 0) != 0:
+        if match[0][0].find(cmd, 0) == -1:
             return ""
 
         # Remove the command from receive buffer
@@ -114,7 +117,7 @@ class SubUpyUtility():
     def ListFile(subupy_serial):
         subupy_serial.SendCmd("import os")
 
-        list_str = subupy_serial.SendCmd("os.listdir()")
+        list_str = subupy_serial.SendCmd("os.listdir('./')")
         list_str = list_str.replace('\r\n', '')
         return ast.literal_eval(list_str)
 
