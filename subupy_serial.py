@@ -32,17 +32,18 @@ class SubUpySerial():
         """
         self._port = serial.Serial(port=port, baudrate=baud, timeout=self.CHAR_TIMEOUT)
 
-    def SendCmd(self, cmd, get_output=True):
+    def SendCmd(self, cmd, get_output=True, ctrtc_signal=False):
         # Send ctrl+c to abort current command line
-        self._port.write(self.CODE_CTRL_C.encode('cp437'))
-
-        # Write the command
-        self._port.flushOutput()
-        if get_output == True:
-            self.receiveRsp()
+        if ctrtc_signal == True:
+            self._port.write(self.CODE_CTRL_C.encode('cp437'))
+            self._port.flushOutput()
+            # Wait until target able to receive new command
+            if get_output == True:
+                self.receiveRsp()
 
         # Append new line at the end of command
         self._port.write((cmd + "\n").encode('cp437'))
+        self._port.flushOutput()
 
         # Receive the whole buffer from target
         if get_output == True:
@@ -119,7 +120,7 @@ class SubUpyUtility():
 
     @staticmethod
     def ListFile(subupy_serial):
-        subupy_serial.SendCmd("import os", False)
+        subupy_serial.SendCmd("import os", ctrtc_signal=True)
 
         list_str = subupy_serial.SendCmd("os.listdir('./')")
         list_str = list_str.replace('\r\n', '')
@@ -131,7 +132,7 @@ class SubUpyUtility():
         if not (file_name in list_files):
             return None
 
-        subupy_serial.SendCmd("f=open('" + file_name + "', 'r')", False)
+        subupy_serial.SendCmd("f=open('" + file_name + "', 'r')", ctrtc_signal=True)
         response_str = subupy_serial.SendCmd("f.read()")
         subupy_serial.SendCmd("f.close()")
         if len(response_str) < 2:
@@ -147,9 +148,9 @@ class SubUpyUtility():
 
     @staticmethod
     def WriteFile(subupy_serial, file_name, file_data):
-        subupy_serial.SendCmd("f=open('" + file_name + "', 'w')", False)
+        subupy_serial.SendCmd("f=open('" + file_name + "', 'w')", ctrtc_signal=True)
         response_str = subupy_serial.SendCmd("f.write('" + file_data + "')")
-        subupy_serial.SendCmd("f.close()", False)
+        subupy_serial.SendCmd("f.close()")
         return response_str
 
     @staticmethod
@@ -158,6 +159,5 @@ class SubUpyUtility():
         if not (file_name in list_files):
             return False
 
-        subupy_serial.SendCmd("import os", False)
         subupy_serial.SendCmd("os.remove('" + file_name + "')")
         return True
