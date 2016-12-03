@@ -21,8 +21,9 @@ class SubUpySerial():
     """
     SubUpySerial extends `Serial` by adding functions to read/write subupy commands.
     """
-    # worst-case byte-to-byte time is 100ms
-    CHAR_TIMEOUT = 0.1
+    # worst-case byte-to-byte time is 5ms
+    CHAR_TIMEOUT = 0.005
+    # wait at least 10ms after last byte
     RECEIVE_TIMEOUT = 10
     CODE_CTRL_C = '\x03'
 
@@ -124,6 +125,8 @@ class SubUpyUtility():
 
         list_str = subupy_serial.SendCmd("os.listdir('./')")
         list_str = list_str.replace('\r\n', '')
+        if len(list_str) == 0:
+            return []
         return ast.literal_eval(list_str)
 
     @staticmethod
@@ -148,8 +151,17 @@ class SubUpyUtility():
 
     @staticmethod
     def WriteFile(subupy_serial, file_name, file_data):
+        # Open file
         subupy_serial.SendCmd("f=open('" + file_name + "', 'w')", ctrtc_signal=True)
-        response_str = subupy_serial.SendCmd("f.write('" + file_data + "')")
+
+        # Write it
+        for line in file_data.splitlines():
+            # Replace ' with \', so the REPL won't complain about syntax error
+            line = line.replace("'", r"\'")
+            # Write the string
+            response_str = subupy_serial.SendCmd("f.write('%s\\n')" % line)
+
+        # Close it
         subupy_serial.SendCmd("f.close()")
         return response_str
 
