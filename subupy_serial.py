@@ -17,12 +17,46 @@ import serial
 #---- CONSTANT
 
 #---- CLASSES
+def BackslashCount(text_data, index):
+    if index == 0:
+        return 0
+
+    examine = index-1
+    count = 0
+
+    while examine >= 0:
+        # If no more backslash
+        if text_data[examine] != '\\':
+            return count
+        # check if still more backslash
+        count += 1
+        examine -= 1
+
+    return count
+
+def AppendEscapeChar(text_data, escaped_char):
+    match = text_data.find(escaped_char)
+    if match == -1:
+        return text_data
+
+    while (match != -1):
+        backslash_count = BackslashCount(text_data, match)
+        # if the baskslash is even, add one more backslash to escaped wanted character
+        if (backslash_count % 2 == 0):
+            text_data = text_data[:match] + '\\' + text_data[match:]
+            match = text_data.find(escaped_char, match+2)
+        # if it is odd no need to add any backslash
+        else:
+            # text_data = text_data[:match] + '\\\\' + text_data[match:]
+            match = text_data.find(escaped_char, match+1)
+    return text_data
+
 class SubUpySerial():
     """
     SubUpySerial extends `Serial` by adding functions to read/write subupy commands.
     """
     # worst-case byte-to-byte time is 5ms
-    CHAR_TIMEOUT = 0.005
+    CHAR_TIMEOUT = 0.1
     # wait at least 10ms after last byte
     RECEIVE_TIMEOUT = 10
     CODE_CTRL_C = '\x03'
@@ -43,7 +77,7 @@ class SubUpySerial():
                 self.receiveRsp()
 
         # Append new line at the end of command
-        self._port.write((cmd + "\n").encode('cp437'))
+        self._port.write((cmd + "\r\n").encode('cp437'))
         self._port.flushOutput()
 
         # Receive the whole buffer from target
@@ -65,7 +99,7 @@ class SubUpySerial():
             read_bytes = self._port.read(1 if waiting == 0 else waiting)
 
             if len(read_bytes) != 0:
-                time_start = float(time.time() * 1000)
+                time_check = time_start = float(time.time() * 1000)
                 response += read_bytes.decode('cp437')
 
             if read_bytes == b'' and (time_check - time_start) > self.RECEIVE_TIMEOUT:
@@ -123,7 +157,7 @@ class SubUpyUtility():
     def ListFile(subupy_serial):
         subupy_serial.SendCmd("import os", ctrtc_signal=True)
 
-        list_str = subupy_serial.SendCmd("os.listdir('./')")
+        list_str = subupy_serial.SendCmd("os.listdir()")
         list_str = list_str.replace('\r\n', '')
         if len(list_str) == 0:
             return []
@@ -157,7 +191,7 @@ class SubUpyUtility():
         # Write it
         for line in file_data.splitlines():
             # Replace ' with \', so the REPL won't complain about syntax error
-            line = line.replace("'", r"\'")
+            line = AppendEscapeChar(line, '\'')
             # Write the string
             response_str = subupy_serial.SendCmd("f.write('%s\\n')" % line)
 
