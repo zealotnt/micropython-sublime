@@ -5,6 +5,12 @@ import subprocess
 import threading
 import sys
 import os
+import imp
+
+### =======
+### reload plugin files on change
+imp.reload(sys.modules['subupy_serial'])
+
 from subupy_serial import *
 
 settings = sublime.load_settings('subupy.sublime-settings')
